@@ -15,10 +15,16 @@ interface ServiceRendererProps {
   service: ServiceTab;
   isDarkMode: boolean;
   isActive: boolean;
+  isDisabled?: boolean;
 }
 
 // Memoized service renderer for better performance
-const ServiceRenderer: React.FC<ServiceRendererProps> = memo(({ service, isDarkMode, isActive }) => {
+const ServiceRenderer: React.FC<ServiceRendererProps> = memo(({ service, isDarkMode, isActive, isDisabled = false }) => {
+  // Don't render anything if the service is disabled
+  if (isDisabled) {
+    return null;
+  }
+  
   // Always render but control visibility to prevent reload
   const containerStyle: React.CSSProperties = {
     height: '100%',

@@ -77,13 +77,14 @@ function App() {
   const serviceComponents = React.useMemo(() => {
     const components = new Map();
     services.forEach(service => {
+      const isDisabled = disabledServices.has(service.id);
       components.set(service.id, (
         <ServiceRenderer
           key={service.id}
           service={service}
           isDarkMode={isDarkMode}
           isActive={activeTab === service.id}
-          isDisabled={disabledServices.has(service.id)}
+          isDisabled={isDisabled}
         />
       ));
     });
@@ -354,6 +355,16 @@ function App() {
       }
       return newSet;
     });
+    
+    // If disabling the currently active service, switch to another service or show welcome screen
+    if (!enabled && activeTab === serviceId) {
+      const remainingEnabledServices = services.filter(s => s.id !== serviceId && !disabledServices.has(s.id));
+      if (remainingEnabledServices.length > 0) {
+        setActiveTab(remainingEnabledServices[0].id);
+      } else {
+        setActiveTab('');
+      }
+    }
   };
 
   const handleReloadService = (serviceId: string) => {
@@ -674,6 +685,18 @@ function App() {
                           <br />
                           Right-click on the service icon to enable it.
                         </Text>
+                        <div style={{ marginTop: '16px' }}>
+                          <Button 
+                            type="primary"
+                            onClick={() => handleToggleServiceStatus(services[index]?.id || '', true)}
+                            style={{
+                              background: 'linear-gradient(135deg, #52c41a, #389e0d)',
+                              border: 'none'
+                            }}
+                          >
+                            Enable Service
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ) : (

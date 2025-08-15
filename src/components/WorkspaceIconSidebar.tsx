@@ -194,7 +194,8 @@ const WorkspaceIconSidebar: React.FC<WorkspaceIconSidebarProps> = ({
         key: 'reload',
         label: 'Reload Service',
         icon: <ReloadOutlined />,
-        onClick: () => handleServiceReload(service.id, service.name)
+        onClick: () => handleServiceReload(service.id, service.name),
+        disabled: isDisabled
       },
       {
         key: 'edit',
@@ -256,12 +257,17 @@ const WorkspaceIconSidebar: React.FC<WorkspaceIconSidebarProps> = ({
 
         const menuItem = document.createElement('div');
         menuItem.style.padding = '8px 16px';
-        menuItem.style.cursor = 'pointer';
+        menuItem.style.cursor = item.disabled ? 'not-allowed' : 'pointer';
         menuItem.style.display = 'flex';
         menuItem.style.alignItems = 'center';
         menuItem.style.gap = '12px';
-        menuItem.style.color = item.danger ? '#ff4d4f' : (isDarkMode ? '#fff' : '#262626');
+        menuItem.style.color = item.disabled 
+          ? (isDarkMode ? '#666' : '#bfbfbf')
+          : item.danger 
+            ? '#ff4d4f' 
+            : (isDarkMode ? '#fff' : '#262626');
         menuItem.style.transition = 'background-color 0.2s';
+        menuItem.style.opacity = item.disabled ? '0.5' : '1';
         
         // Create icon element
         const iconSpan = document.createElement('span');
@@ -288,17 +294,21 @@ const WorkspaceIconSidebar: React.FC<WorkspaceIconSidebarProps> = ({
         menuItem.appendChild(iconSpan);
         menuItem.appendChild(labelSpan);
         
-        menuItem.addEventListener('mouseenter', () => {
-          menuItem.style.background = isDarkMode ? '#262626' : '#f0f0f0';
-        });
-        
-        menuItem.addEventListener('mouseleave', () => {
-          menuItem.style.background = 'transparent';
-        });
+        if (!item.disabled) {
+          menuItem.addEventListener('mouseenter', () => {
+            menuItem.style.background = isDarkMode ? '#262626' : '#f0f0f0';
+          });
+          
+          menuItem.addEventListener('mouseleave', () => {
+            menuItem.style.background = 'transparent';
+          });
+        }
         
         menuItem.addEventListener('click', (event) => {
           event.stopPropagation();
-          item.onClick();
+          if (!item.disabled) {
+            item.onClick();
+          }
           document.body.removeChild(menu);
         });
         
@@ -400,12 +410,34 @@ const WorkspaceIconSidebar: React.FC<WorkspaceIconSidebarProps> = ({
       {/* Service Icons */}
       <div style={{
         flex: 1,
-        // overflowY: 'auto',
+        overflowY: 'auto',
+        overflowX: 'hidden',
         padding: '16px 8px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '12px'
-      }}>
+        gap: '12px',
+        // Custom scrollbar styling
+        scrollbarWidth: 'thin',
+        scrollbarColor: isDarkMode ? '#434343 transparent' : '#d9d9d9 transparent'
+      }}
+      className="service-icons-container">
+        <style>
+          {`
+            .service-icons-container::-webkit-scrollbar {
+              width: 6px;
+            }
+            .service-icons-container::-webkit-scrollbar-track {
+              background: transparent;
+            }
+            .service-icons-container::-webkit-scrollbar-thumb {
+              background: ${isDarkMode ? '#434343' : '#d9d9d9'};
+              border-radius: 3px;
+            }
+            .service-icons-container::-webkit-scrollbar-thumb:hover {
+              background: ${isDarkMode ? '#595959' : '#bfbfbf'};
+            }
+          `}
+        </style>
         {serviceConfigs.map(({ config, ...service }, index) => (
           <Tooltip 
             key={service.id} 
